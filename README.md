@@ -1,6 +1,3 @@
-## Writeup Template
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
 ---
 
 **Vehicle Detection Project**
@@ -14,16 +11,7 @@ The goals / steps of this project are the following:
 * Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
 * Estimate a bounding box for vehicles detected.
 
-## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
-
 ---
-### Writeup / README
-
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
-
-You're reading it!
-
 ### Histogram of Oriented Gradients (HOG)
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
@@ -32,15 +20,15 @@ The code for this step is contained in the code cell 1 of the IPython notebook v
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
-![data_sample](.\output_images\data_sample.png)
+![data_sample](/output_images/data_sample.png)
 
 I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
 Here is an example using the `YCrCb` color space and HOG parameters of `orientations=9, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
-![Hog sample](.\output_images\Hog sample.png)
+![Hog sample](/output_images/Hog sample.png)
 
-![Hog sample 2](.\output_images\Hog sample 2.png)
+![Hog sample 2](/output_images/Hog sample 2.png)
 
 
 
@@ -48,15 +36,15 @@ Here is an example using the `YCrCb` color space and HOG parameters of `orientat
 
 I tried various combinations of parameters. For orient, I tried some other different value, following is a sample of orient = 18, which shows similar result as orient = 9, so I keep orient as 9.
 
-![Hog_orient_18](.\output_images\Hog_orient_18.png)
+![Hog_orient_18](/output_images/Hog_orient_18.png)
 
 For pix_per_cell, following is a sample of 16, which seems too large since the feature of car is not detected very well, so I keep it as 8.
 
-![Hog_cell_16](.\output_images\Hog_cell_16.png)
+![Hog_cell_16](/output_images/Hog_cell_16.png)
 
 For cell_per_block, following is a sample of value 2, which is similar with value 4. My final choice is 2, but 4 may also work well, both have 0.98/0.99 accuracy in trained model.
 
-![Hog_block_2](.\output_images\Hog_block_2.png)
+![Hog_block_2](/output_images/Hog_block_2.png)
 
 Especially for channels. using ALL 3 channels get better accuracy result than only use one of them, so for final model, all 3 channels are used.
 
@@ -72,19 +60,19 @@ The model and other parameters were written into a pickle file for further usage
 
 I started with one scale 1.5 from 350 to 700, and there're many vehicles are not detected, especially for those faraway cars.  It's normal since the vehicle is actually very large close to the camera, and the smaller scale fits those faraway vehicles better. Following chart shows a pretty small scale is needed for a faraway car. 
 
-![scale_1](.\output_images\scale_1.png)
+![scale_1](/output_images/scale_1.png)
 
  After tuning with test images and additional images from video. Finally 3 scales 0.9, 1.5, and 2 are used.
 
 The implementation of sliding window is in code cell 5 (line 131 to 209), `find_cars_multiple_scales()` , which is from the find_cars() function in the lesson, I changed the calling of cv2.rectangle() to draw each slide window with blue, and the caller will draw the boundary with green. The original find_cars() defines 64 as the sampling rate, with 8 cells and 8 pix per cell, and cells_per_step = 2, which means we step 2 cells instead of overlap, and it works well for the project. Following image shows the inner slide windows and outer boundary, note the 2nd image is a negative test and blank is correct.
 
-![scale_window](.\output_images\scale_window.png)
+![scale_window](/output_images/scale_window.png)
 
 In the 4th image in above diagram, there's a big false positive at the left. I use the heat map and `heat_threshold`1.5 to filter it out. The code is in cell 5 `find_vehicles_boundary_multiple_scales()` line 211 to 236. 
 
 I tried several thresh values from 1 to 2.5, the 1.5 works best. Following images show how the heap map and thresh works, the left false positive is gone.
 
-![scale_heat](.\output_images\apply_thresh.png)
+![scale_heat](/output_images/apply_thresh.png)
 
 
 
@@ -92,7 +80,7 @@ I tried several thresh values from 1 to 2.5, the 1.5 works best. Following image
 
 Ultimately I searched on 3 scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
 
-![multiple_scale_find](.\output_images\multiple_scale_find.png)
+![multiple_scale_find](/output_images/multiple_scale_find.png)
 ---
 
 In order to improve the performance, I tuned the scan scope of each scale to reduce the iteration time. Since the small scale fits top region well, and large scale fits bottom better, restrict their scan scope won't impact the accuracy, and even more, it's also helpful to reduce false positives. The final y scope for each scale is following. 
@@ -112,13 +100,13 @@ It's project_video_vd.mp4.
 
 Following is a screenshot of video.
 
-![project_video_vd_t_39.60](.\output_images\project_video_vd_t_39.60.png)
+![project_video_vd_t_39.60](/output_images/project_video_vd_t_39.60.png)
 
 The .\extra\project_video_vd_all.mp4 is added with lane line detection, just for fun.
 
 Following is a screenshot of video.
 
-![project_video_all_t_17.16](.\output_images\project_video_all_t_17.16.png)
+![project_video_all_t_17.16](/output_images/project_video_all_t_17.16.png)
 
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
